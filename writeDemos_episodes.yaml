@@ -22,7 +22,7 @@ image_pad: 4
 use_lowdim: true
 
 #for save and loading
-demo_root: /iris/u/maxjdu/Repos/PlayItByEar_Code/demos/ # CHANGE THIS
+demo_root: /home/punygod_admin/SoundSense/PlayItByEar_Code/demos/ # CHANGE THIS
 system: sim
 stack: 1 #stack should be 1 for demo collection
 

@@ -32,8 +32,8 @@ priority: True #if this is true, we only train on the corrections (keep for the 
 corrections_file: ${load_folder}/corrections/demos_finished.pkl #fill this in later
 
 #########################
-actor_root: /iris/u/maxjdu/Repos/PlayItByEar_Code/Results/
-demo_root: /iris/u/maxjdu/Repos/PlayItByEar_Code/demos/
+actor_root: /home/punygod_admin/SoundSense/PlayItByEar_Code/Results/
+demo_root: /home/punygod_admin/SoundSense/PlayItByEar_Code/demos/
 use_squashed: True #squashed vs not squashed distributions
 lowdim_stack: 10
 frame_stack: 3
@@ -41,7 +41,7 @@ system: sim #sim for the mujoco stuff, and "real" for franka
 
 #####RUN CHANGES HERE ############
 #core adjustements
-seed: ??
+seed: 1
 number_demos: 50
 demo_file: ${environmentName}_${number_demos}/demos.pkl
 stack: 10 # history

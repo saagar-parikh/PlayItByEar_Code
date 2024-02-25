@@ -24,13 +24,16 @@ import gym
 import csv
 
 from robosuite import make
-from robosuite.wrappers import GymWrapper
+from robosuite.wrappers.gym_wrapper import GymWrapper
 from robosuite.controllers import load_controller_config
 
 torch.backends.cudnn.benchmark = True
 
 from custom_environments.indicatorboxBlock import IndicatorBoxBlock
 from custom_environments.blocked_pick_place import BlockedPickPlace
+
+def debug(str):
+    print("\033[33mDEBUG: "+str+"\033[0m")
 
 def make_env(cfg):
     env = make(
@@ -334,6 +337,9 @@ class Workspace(object):
             done = float(done)
             done_no_max = 0 if episode_step + 1 == self.env._max_episode_steps else done
             episode_reward += reward
+
+            
+            debug(f"lowdim.shape {lowdim.shape}\n obs.shape {obs.shape}\n action.shape {action.shape}\n reward.shape {reward}\n next_lowdim.shape {next_lowdim.shape}\n next_obs.shape {next_obs.shape}\n done {done}\n done_no_max {done_no_max}")
             buffer_list.append((lowdim, obs, action, reward,
                                 (1.0 if self.step > cfg.sparseProp * cfg.episodeLength else 0.0), next_lowdim, next_obs, done, done_no_max))
 
@@ -368,7 +374,9 @@ class Workspace(object):
             self.step = 0
             successes += isSuccessful
             print("\t", successes, " out of ", counter)
+        print("Saving demos...")
         pkl.dump(self.replay_buffer, open( "demos.pkl", "wb" ), protocol=4 )
+        print("Demos saved")
 
 
 @hydra.main(config_path='writeDemos_episodes.yaml', strict=True)

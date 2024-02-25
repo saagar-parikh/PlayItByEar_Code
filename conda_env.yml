@@ -24,6 +24,6 @@ dependencies:
     - yapf
     - librosa
     - pyquaternion
-    - sklearn
+    - scikit-learn
     - matplotlib
     - kornia==0.6.1

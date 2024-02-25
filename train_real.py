@@ -14,6 +14,9 @@ from shutil import copyfile
 import numpy as np
 import hydra
 import gym
+import warnings
+
+warnings.filterwarnings('ignore')
 
 import torch
 
@@ -30,6 +33,9 @@ torch.backends.cudnn.benchmark = True
 
 from custom_environments.indicatorboxBlock import IndicatorBoxBlock
 from custom_environments.blocked_pick_place import BlockedPickPlace
+
+def debug(str):
+    print("\033[33mDEBUG: "+str+"\033[0m")
 
 def make_env(cfg):
     env = make(
@@ -59,6 +65,7 @@ def make_env(cfg):
             dims += np.shape(ob_dict[key])[0]
 
     cfg.agent.params.lowdim_dim = cfg.lowdim_stack *  dims
+    # debug(f"dim in make_env: {dims}")
     env = utils.FrameStack_StackCat(env, cfg, k=cfg.frame_stack,  l_k = cfg.lowdim_stack, stack_depth = cfg.stack, demo = True, audio = False)
 
     np.random.seed(cfg.seed)
@@ -68,7 +75,8 @@ def make_env(cfg):
 
 def worker_init_fn(worker_id):
     seed = np.random.get_state()[1][0] + worker_id
-    np.random.seed(seed)
+    # np.random.seed(seed)
+    np.random.seed(0)
     random.seed(seed)
 
 
@@ -86,7 +94,6 @@ class Workspace(object):
         print(f'workspace: {self.work_dir}')
         print("cuda status: ", torch.cuda.is_available())
         self.cfg = cfg
-
         self.logger = Logger(cfg = cfg,
                              log_dir = self.work_dir,
                              save_tb=cfg.log_save_tb,
@@ -96,19 +103,28 @@ class Workspace(object):
 
         utils.set_seed_everywhere(cfg.seed)
         self.device = torch.device(cfg.device)
-        self.env = make_env(cfg)
+        # self.env = make_env(cfg)
+        dims = 13        # TODO: Hardcoded
+        cfg.agent.params.lowdim_dim = cfg.lowdim_stack *  dims
+        debug("make env done")
         
-        obj_dict, lowdim, obs = self.env.reset() #let's mold our model to what the environment outputs
-        cfg.agent.params.obs_shape = np.shape(obs)[1:]
+        # obj_dict, lowdim, obs = self.env.reset() #let's mold our model to what the environment outputs
+        # cfg.agent.params.obs_shape = np.shape(obs)[1:]
+        cfg.agent.params.obs_shape = (3, 84, 84)            # TODO: Hardcoded for now
+
         #obs is returned as [stack, 3, 84, 84]. We want [3, 84, 84]
         #batch comes first, so [batch, stack, 3, 84, 84]
 
         #setting the appropiate configuration parameters
-        cfg.agent.params.action_shape = self.env.action_space.shape
-        cfg.agent.params.action_range = [
-            float(self.env.action_space.low.min()),
-            float(self.env.action_space.high.max())
-        ]
+        # cfg.agent.params.action_shape = self.env.action_space.shape
+        cfg.agent.params.action_shape = (4,)                # TODO: Hardcoded
+        # cfg.agent.params.action_range = [
+        #     float(self.env.action_space.low.min()),
+        #     float(self.env.action_space.high.max())
+        # ]
+        cfg.agent.params.action_range = [-1., 1.]           # TODO: Hardcoded
+        # print("action space shape",self.env.action_space.shape)
+        # print("action range", cfg.agent.params.action_range)
         self.agent = hydra.utils.instantiate(cfg.agent)
 
         if not(cfg.eval_only):
@@ -139,6 +155,7 @@ class Workspace(object):
             self.work_dir if cfg.save_video else None)
 
         self.step = 0
+        debug("Workspace created")
 
     #this function is a self-contained evaluator of the agent in a new environment
     def evaluate(self, episodes = None):
@@ -205,7 +222,8 @@ class Workspace(object):
             if self.step >= 0 and self.step % self.cfg.eval_frequency == 0:
                 print("eval time!")
                 self.agent.save(self.step, self.work_dir)
-                self.evaluate()
+                # self.evaluate()
+                print("skipping eval because no env")
             self.step += 1
 
         #this function will load pretrained models and evaluate them
@@ -215,8 +233,9 @@ class Workspace(object):
 
 @hydra.main(config_path='imitationtrain_memory.yaml', strict=True)
 def main(cfg):
-    from imitationtrain_memory import Workspace as W
+    from train_real import Workspace as W
     workspace = W(cfg)
+    debug("Workspace created")
     if cfg.eval_only:
         workspace.restoreAndRun()
     else:

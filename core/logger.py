@@ -207,7 +207,7 @@ class Logger(object):
         if not self._should_log(step, log_frequency):
             return
         assert key.startswith('train') or key.startswith('eval')
-        self._try_sw_log_histogram(key, histogram, step)
+        # self._try_sw_log_histogram(key, histogram, step)
 
     def dump(self, step, save=True, ty=None):
         step = self._update_step(step)

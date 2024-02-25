@@ -14,6 +14,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from skimage.util.shape import view_as_windows
 from torch import distributions as pyd
+import warnings
+
+warnings.filterwarnings('ignore')
 
 
 class eval_mode(object):

@@ -20,6 +20,9 @@ import torchvision.transforms.functional as T_f
 import torchvision.models as models
 
 
+def debug(str):
+    print("\033[33mDEBUG: "+str+"\033[0m")
+
 class Encoder(nn.Module):
     """Convolutional encoder for image-based observations."""
     def __init__(self, obs_shape, feature_dim, lowdim_dim, num_layers, num_filters, output_dim, output_logits):
@@ -114,6 +117,7 @@ class Actor(nn.Module):
         # squashed is a remnant from AWAC; ignore this
         assert lowdim.shape[0] == obs.shape[0] #batch size
         assert lowdim.shape[1] == obs.shape[1] #sequence leng
+        # debug(f"lowdim.shape {lowdim.shape}. obs.shape {obs.shape}")
         batch_size = lowdim.shape[0]
         sequence_length = lowdim.shape[1]
         combined = lowdim.shape[0] * lowdim.shape[1]
